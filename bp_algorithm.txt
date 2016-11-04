@@ -1,0 +1,147 @@
+#include <iostream>
+#include <time.h>
+using namespace std;
+
+#define MAX_LEVEL_COUNT 10  //最大网络层数
+#define MAX_PER_LEVEL_COUNT 10  //每层最大节点数
+#define PREC 0.01 //精度
+const double sv = 0.0001; //学习速率
+const double a = 1.0; //sig函数的参数a
+int level_count; 
+int per_level_count[MAX_LEVEL_COUNT];
+double w[MAX_LEVEL_COUNT][MAX_PER_LEVEL_COUNT][MAX_PER_LEVEL_COUNT]; //权值
+double y[MAX_LEVEL_COUNT][MAX_LEVEL_COUNT]; //输出
+double d[MAX_LEVEL_COUNT]; //期望
+double lg[MAX_LEVEL_COUNT][MAX_LEVEL_COUNT]; //局部梯度
+
+double 
+
+double diff_func(double v);
+void print_w();
+void print_lg();
+void print_output();
+void input_value();
+
+void init_paramter()
+{
+	cin >> level_count;
+
+	for (int i = 0; i < level_count; i++)
+		cin >> per_level_count[i];
+
+	srand(time(0));
+	for (int i = 0; i < level_count - 1; i++)
+		for (int j = 0; j < per_level_count[i]; j++)
+			for (int k = 0; k < per_level_count[i + 1]; k++)
+			{
+			//	cin >> w[i][j][k];
+				w[i][j][k] = 2.0 * rand() / RAND_MAX - 1.0;	
+			}
+}
+
+void forward_calc()
+{
+	for (int i = 1; i < level_count; i++)
+		for (int j = 0; j < per_level_count[i]; j++)
+			for (int k = 0; k < per_level_count[i - 1]; k++)
+				y[i][j] += y[i - 1][k] * w[i - 1][k][j];
+}
+
+void back_calc()
+{
+	int delt_w;
+	//更新w权值
+	for (int c = level_count - 1; c > 1; c--) 
+	{
+		if (c == level_count - 1)  //输出层
+		{
+			for (int i = 0; i < per_level_count[c]; i++)
+			{
+				double e = d[i] - y[c][i]; //误差
+				// diff_func() 
+				//这里用sig函数的导函数，其导数可以用自身表示，比价特殊，所以直接求
+				lg[c][i] = e * a * y[c][i] * (1 - y[c][i]);
+				for (int j = 0; j < per_level_count[c - 1]; j++)
+				{
+					delt_w = sv * lg[c][i] * y[c - 1][j];
+					w[c - 1][j][i] += delt_w;
+				}
+			}
+		}
+		else //隐层
+		{
+			for (int i = 0; i < per_level_count[c]; i++)
+			{ 
+				double added = 0;
+				for (int j = 0; j < per_level_count[c + 1]; j++)
+					added += lg[c + 1][j] * w[c][i][j];
+				lg[c][i] = a * y[c][i] * (1 - y[c][i]) *added;
+				for (int j = 0; j < per_level_count[c - 1]; j++)
+				{
+					delt_w = sv * lg[c][i] * y[c-1][j];
+					w[c - 1][j][i] += delt_w;
+				}
+			}
+		}
+	}
+}
+
+int main()
+{
+	init_paramter();
+	print_w();
+	print_lg();
+	input_value();
+	for (int i = 0; i < 10; i++)
+	{
+		do 
+		{
+			forward_calc();
+			print_output();
+			back_calc();
+			print_w();
+			print_lg();
+		} while ();
+	}
+	return 0;
+}
+
+void print_w()
+{
+	cout << "w value is :" << endl;
+	for(int i = 0; i < level_count - 1; i++)
+		for (int j = 0; j < per_level_count[i]; j++)
+			for (int k = 0; k < per_level_count[i + 1]; k++)
+				cout << "level" << i << " : " << j << "--" << k << " : " << w[i][j][k] << endl;
+}
+
+void print_lg()
+{
+	cout << "lg value is :" << endl;
+	for (int i = 0; i < level_count; i++)
+		for (int j = 0; j < per_level_count[i]; j++)
+			cout << "[" << i << "," << j << "] : " << lg[i][j] << endl;
+}
+
+void print_output()
+{
+	for (int i = 0; i < per_level_count[level_count - 1]; i++)
+		cout << "output " << i << " : " << y[level_count - 1][i] << endl;
+}
+
+void input_value()
+{
+	cin >> 
+	//输入初始条件
+	for (int i = 0; i < per_level_count[0]; i++)
+		cin >> y[0][i];
+
+	//归一化
+	for()
+
+	//输入结果期望
+	for (int i = 0; i < per_level_count[level_count - 1]; i++)
+		cin >> d[i];
+
+
+}
