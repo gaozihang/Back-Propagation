@@ -73,7 +73,8 @@ void back_calc()
 			for (int j = 0; j < per_level_count[c - 1]; j++)
 			{
 				delt_w = sv * lg[c][0] * y[c - 1][j];
-				w[c - 1][j][0] += delt_w;
+				//这里不应该提早改变w的值
+				//w[c - 1][j][0] += delt_w;
 			}
 		}
 		else 
@@ -87,10 +88,12 @@ void back_calc()
 				for (int j = 0; j < per_level_count[c - 1]; j++)
 				{
 					delt_w = sv * lg[c][i] * y[c-1][j];
-					w[c - 1][j][i] += delt_w;
+					//这里不应该提早改变w的值
+					//w[c - 1][j][i] += delt_w;
 				}
 			}
 		}
+		//这里全体w改变值
 	}
 }
 
