@@ -1,0 +1,120 @@
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+#include <ctime>
+using namespace std;
+
+double input[4][2], output[4];
+double mid_in[4][2], mid_out[4][2];
+double res_in[4][2], res_out[4];
+double w1[2][2], w2[2][2];
+double dw1[2][2], dw2[2][2];
+double p1[2],p2;
+
+void init()
+{
+	input[0][0] = 0.0, input[0][1] = 0.0, output[0] = 0.0;
+	input[1][0] = 0.0, input[1][1] = 1.0, output[1] = 1.0;
+	input[2][0] = 1.0, input[2][1] = 0.0, output[2] = 1.0;
+	input[3][0] = 1.0, input[3][1] = 1.0, output[3] = 0.0;
+
+	memset(mid_in, 0, sizeof(mid_in));
+	memset(mid_out, 0, sizeof(mid_out));
+	memset(dw1, 0, sizeof(dw1));
+	memset(dw2, 0, sizeof(dw2));
+	memset(p1, 0, sizeof(p1));
+	srand((unsigned)time(NULL));
+
+	for(int i = 0; i < 2; i++)
+		for (int j = 0; j < 2; j++)
+		{
+			w1[i][j] = rand() / (double)(RAND_MAX);
+			w2[i][j] = rand() / (double)(RAND_MAX);
+		}
+
+}
+
+void forward_calc()
+{
+	for (int n = 0; n < 4; n++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			mid_in[n][j] = 0;
+			for (int i = 0; i < 2; i++)
+				mid_in[n][j] += input[n][i] * w1[i][j];
+			mid_out[n][j] = 1.0 / (1 + exp(-mid_in[n][j]));
+		}
+		res_in[n][0] = 0;
+		for (int i = 0; i < 2; i++)
+			res_in[n][0] += mid_out[n][i] * w2[i][0];
+		res_out[n] = 1.0 / (1 + exp(-res_in[n][0]));
+	}
+}
+
+double back_calc()
+{
+	double a = 0.3;
+	double err = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		err += (output[i] - res_out[i]) * (output[i] - res_out[i]);
+
+		p2 = (output[i] - res_out[i]) * res_out[i] * (1 - res_out[i]);
+
+		for (int j = 0; j < 2; j++)
+			dw2[j][0] = a * p2 * mid_out[i][j];
+
+		p1[0] = a * mid_out[i][0] * (1 - mid_out[i][0]) * p2 * w2[0][0];	
+		p1[1] = a * mid_out[i][1] * (1 - mid_out[i][1]) * p2 * w2[1][0];
+
+			
+		for (int j = 0; j < 2; j++)
+			for (int k = 0; k < 2; k++)
+				dw1[j][k] = a * p1[k] * input[i][j];
+
+		for (int j = 0; j < 2; j++)
+			for (int k = 0; k < 2; k++)
+				w1[j][k] += dw1[j][k];
+
+		for (int j = 0; j < 2; j++)
+			w2[j][0] += dw2[j][0];
+	}
+	return err;
+}
+
+int main()
+{
+	double err;
+	init();
+	while (1)
+	{
+		forward_calc();
+		err = back_calc();
+		printf("%lf\n", err);
+		if (err < 0.1)
+			break;
+	}
+	double n1, n2;
+	while (scanf_s("%lf%lf", &n1, &n2) == 2)
+	{
+		mid_in[0][0] = n1;
+		mid_in[0][1] = n2;
+		for (int j = 0; j < 2; j++)
+		{
+			mid_in[0][j] = 0;
+			for (int i = 0; i < 2; i++)
+				mid_in[0][j] += input[0][i] * w1[i][j];
+			mid_out[0][j] = 1.0 / (1 + exp(-mid_in[0][j]));
+		}
+		for (int j = 0; j < 2; j++)
+		{
+			res_in[0][j] = 0;
+			for (int i = 0; i < 2; i++)
+				res_in[0][j] += mid_out[0][i] * w2[i][j];
+			res_out[0] = 1.0 / (1 + exp(-res_in[0][j]));
+		}
+		printf("%lf\n", res_out[0]);
+	}
+	return 0;
+}
